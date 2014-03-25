@@ -1,4 +1,5 @@
 var Bookshelf = require('bookshelf');
+var Knex  = require('knex');
 var path = require('path');
 
 var db = Bookshelf.initialize({
@@ -20,6 +21,16 @@ var db = Bookshelf.initialize({
 
 //define user model;
 
+db.knex = Knex.initialize({
+  client: 'mysql',
+  connection: {
+    host     : '127.0.0.1',
+    user     : 'root',
+    password : '',
+    database : 'shortly',
+    charset  : 'utf8'
+  }
+});
 
 db.knex.schema.hasTable('urls').then(function(exists) {
   if (!exists) {

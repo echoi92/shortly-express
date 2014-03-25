@@ -1,9 +1,10 @@
 var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
+var Knex = require('knex');
 
-// var db = require('./app/config'); *******need to change this to use bookshelf
-var db = require("sqlite3");
+var db = require('./app/config');
+// var db = require("sqlite3");
 var Users = require('./app/collections/users');
 var User = require('./app/models/user');
 var Links = require('./app/collections/links');
