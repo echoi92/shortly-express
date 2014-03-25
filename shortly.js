@@ -36,17 +36,18 @@ function restrict(req, res, next) {
   }
 }
 
-// app.get('/', function(req, res) {
-//   //redirect to index 
-//   //UNLESS not authorized;
-//   res.render('index');
-// });
-
 app.get('/', restrict, function(req, res){
-  console.log('passed authentication, next');
-  console.log('session:', req.session);
- // res.send('This is the restricted area! Hello ' + req.session.user + 'passed the test!');
   res.render('index');
+});
+
+app.get('/create', restrict, function(req, res){
+  res.render('create');
+});
+
+app.get('/links', restrict, function(req, res){
+  Links.reset().fetch().then(function(links) {
+    res.send(200, links.models);
+  });
 });
 
 app.get('/login', function(req, res) {
@@ -65,7 +66,7 @@ app.post('/login', function(req, res){
         // res.redirect('index');
         req.session.regenerate(function(){
         req.session.user = username;
-        res.redirect('/index');
+        res.redirect('/');
         });
       }
   });
@@ -84,15 +85,22 @@ app.post('/signup', function(req, res){
   //check if the username is not in the database
   .save()
   .then(function(model) {
-    res.redirect('login');
+    req.session.regenerate(function(){
+      req.session.user = username;
+      res.redirect('/');
+    });
   });
 });
 
 
+app.get('/logout', function(request, response){
+  request.session.destroy(function(){
+    response.redirect('/');
+  });
+});
 
 
-
-  // INERT INTO QUERY
+  // INSERT INTO QUERY
   // new User({
   // 'username': "chicken",
   // 'password': "legs"
@@ -116,15 +124,15 @@ app.post('/signup', function(req, res){
 
 
 
-app.get('/create', function(req, res) {
-  res.render('index');
-});
+// app.get('/create', function(req, res) {
+//   res.render('index');
+// });
 
-app.get('/links', function(req, res) {
-  Links.reset().fetch().then(function(links) {
-    res.send(200, links.models);
-  });
-});
+// app.get('/links', function(req, res) {
+//   Links.reset().fetch().then(function(links) {
+//     res.send(200, links.models);
+//   });
+// });
 
 
 
