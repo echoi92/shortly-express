@@ -18,12 +18,33 @@ app.configure(function() {
   app.use(partials());
   app.use(express.bodyParser());
   app.use(express.static(__dirname + '/public'));
- // app.use(express.session());
+  app.use(express.cookieParser('S3CRE7'));
+  app.use(express.session());
+  app.use(app.router);
+  //app.use(express.cookieSession());
 });
 
-app.get('/', function(req, res) {
-  //redirect to index 
-  //UNLESS not authorized;
+function restrict(req, res, next) {
+  if (req.session.user) {
+    console.log('next!');
+    next();
+  } else {
+    console.log('not authenticated!');
+    req.session.error = 'Access denied!';
+    res.redirect('/login');
+  }
+}
+
+// app.get('/', function(req, res) {
+//   //redirect to index 
+//   //UNLESS not authorized;
+//   res.render('index');
+// });
+
+app.get('/', restrict, function(req, res){
+  console.log('passed authentication, next');
+  console.log('session:', req.session);
+ // res.send('This is the restricted area! Hello ' + req.session.user + 'passed the test!');
   res.render('index');
 });
 
@@ -40,18 +61,15 @@ app.post('/login', function(req, res){
       if(model===null){
         res.redirect('login');
       }else{
-        res.redirect('index');
+        // res.redirect('index');
+        req.session.regenerate(function(){
+        req.session.user = username;
+        res.redirect('/index');
+        });
       }
   });
 });
 
-    //req.session.regenerate(function(){
-    //req.session.user = username;
- //   res.redirect('/');
-      //});
- // }else {
- //   res.redirect('login');
-  
 
 
 app.get('/signup', function(req, res) {
