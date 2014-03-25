@@ -2,16 +2,24 @@ var Bookshelf = require('bookshelf');
 var path = require('path');
 
 var db = Bookshelf.initialize({
-  client: 'sqlite3',
+  client: 'mysql',
   connection: {
     host: '127.0.0.1',
-    user: 'your_database_user',
-    password: 'password',
-    database: 'shortlydb',
-    charset: 'utf8',
-    filename: path.join(__dirname, '../db/shortly.sqlite')
+    user: 'root',
+    password: '',
+    database: 'shortly',
+    charset: 'utf8'
+    //filename: path.join(__dirname, '../db/shortlydb.')
   }
 });
+
+// var User = db.Model.extend({
+//   tableName: 'users'
+// });
+
+
+//define user model;
+
 
 db.knex.schema.hasTable('urls').then(function(exists) {
   if (!exists) {

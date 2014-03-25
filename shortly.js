@@ -2,7 +2,8 @@ var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 
-var db = require('./app/config');
+// var db = require('./app/config'); *******need to change this to use bookshelf
+var db = require("sqlite3");
 var Users = require('./app/collections/users');
 var User = require('./app/models/user');
 var Links = require('./app/collections/links');
@@ -15,13 +16,86 @@ app.configure(function() {
   app.set('views', __dirname + '/views');
   app.set('view engine', 'ejs');
   app.use(partials());
-  app.use(express.bodyParser())
+  app.use(express.bodyParser());
   app.use(express.static(__dirname + '/public'));
+ // app.use(express.session());
 });
 
 app.get('/', function(req, res) {
+  //redirect to index 
+  //UNLESS not authorized;
   res.render('index');
 });
+
+app.get('/login', function(req, res) {
+  res.render('login');
+});
+
+app.post('/login', function(req, res){
+  var username = req.body.username;
+  var password = req.body.password;
+  new User({'username': username, 'password': password})
+    .fetch()
+    .then(function(model) {
+      if(model===null){
+        res.redirect('login');
+      }else{
+        res.redirect('index');
+      }
+  });
+});
+
+    //req.session.regenerate(function(){
+    //req.session.user = username;
+ //   res.redirect('/');
+      //});
+ // }else {
+ //   res.redirect('login');
+  
+
+
+app.get('/signup', function(req, res) {
+  res.render('signup');
+});
+
+app.post('/signup', function(req, res){
+  var username = req.body.username;
+  var password = req.body.password;
+  new User({'username': username, 'password': password})
+  //check if the username is not in the database
+  .save()
+  .then(function(model) {
+    res.redirect('login');
+  });
+});
+
+
+
+
+
+  // INERT INTO QUERY
+  // new User({
+  // 'username': "chicken",
+  // 'password': "legs"
+  // })
+  // .save();
+
+  // UPDATE QUERY
+  // User.set({username: "Joe", password: "ahaha"});
+  
+  // SELECT QUERY
+  // new User({'username': 'Eugene'})
+  // .fetch()
+  // .then(function(model) {
+  //   // outputs 'Slaughterhouse Five'
+  //   console.log(model.get('password'));
+  // });
+
+
+
+
+
+
 
 app.get('/create', function(req, res) {
   res.render('index');
@@ -30,8 +104,10 @@ app.get('/create', function(req, res) {
 app.get('/links', function(req, res) {
   Links.reset().fetch().then(function(links) {
     res.send(200, links.models);
-  })
+  });
 });
+
+
 
 app.post('/links', function(req, res) {
   var uri = req.body.url;
@@ -40,6 +116,8 @@ app.post('/links', function(req, res) {
     console.log('Not a valid url: ', uri);
     return res.send(404);
   }
+
+
 
   new Link({ url: uri }).fetch().then(function(found) {
     if (found) {
@@ -91,7 +169,7 @@ app.get('/*', function(req, res) {
         db.knex('urls')
           .where('code', '=', link.get('code'))
           .update({
-            visits: link.get('visits') + 1,
+            visits: link.get('visits') + 1
           }).then(function() {
             return res.redirect(link.get('url'));
           });
